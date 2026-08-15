@@ -96,6 +96,12 @@ case ":$PATH:" in
        amarelo "    export PATH=\"\$PATH:$BIN\"" ;;
 esac
 
+OVERLAY="${XDG_CONFIG_HOME:-$HOME/.config}/caelestia-ptbr/local.tsv"
+
 echo
-verde "Tradução instalada. Para ajustar uma palavra, edite $DADOS/pt_BR.tsv"
-verde "e rode: caelestia-ptbr && caelestia shell -k && caelestia shell -d"
+verde "Tradução instalada."
+echo
+verde "  Ajustar uma palavra   crie $OVERLAY"
+verde "                        com 'inglês<TAB>português' e rode: caelestia-ptbr"
+verde "                        (esse arquivo sobrevive às atualizações)"
+verde "  Atualizar             ./atualizar.sh"

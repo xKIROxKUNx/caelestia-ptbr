@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## v1.1.2
+
+- A mensagem final do `instalar.sh` apontava o mapa base para personalização, o que seria
+  desfeito na atualização seguinte. Agora aponta o overlay.
+
 ## v1.1.1
 
 - Adiciona este histórico.
