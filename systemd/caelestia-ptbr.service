@@ -1,0 +1,7 @@
+[Unit]
+Description=Reaplica a tradução pt-BR no Caelestia shell
+Documentation=file:%h/.local/share/caelestia-ptbr/pt_BR.tsv
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/caelestia-ptbr

@@ -1,0 +1,11 @@
+[Unit]
+Description=Vigia atualizações do caelestia-shell para reaplicar a tradução pt-BR
+
+[Path]
+# O pacman reescreve este arquivo a cada atualização do pacote caelestia-shell,
+# desfazendo a cópia traduzida em ~/.config/quickshell/caelestia.
+PathModified=/etc/xdg/quickshell/caelestia/shell.qml
+Unit=caelestia-ptbr.service
+
+[Install]
+WantedBy=default.target

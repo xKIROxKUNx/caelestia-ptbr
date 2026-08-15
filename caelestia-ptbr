@@ -1,0 +1,345 @@
+#!/usr/bin/env python3
+"""Traduz o Caelestia shell para pt-BR.
+
+O quickshell não carrega catálogos de tradução (usa QQmlEngine puro, sem QTranslator),
+então qsTr() sempre devolve a string do código-fonte. A única saída é editar o QML.
+
+Estratégia: re-sincroniza a cópia do usuário a partir do original intocado em /etc/xdg
+e reaplica a tradução por cima. Idempotente — rodar de novo dá sempre o mesmo resultado,
+e é o que precisa acontecer depois de cada atualização do pacote caelestia-shell.
+"""
+
+import argparse
+import re
+import shutil
+import sys
+from pathlib import Path
+
+SRC = Path("/etc/xdg/quickshell/caelestia")
+DST = Path.home() / ".config/quickshell/caelestia"
+
+# Procurado nesta ordem, para o script rodar tanto instalado quanto direto de um clone.
+MAP_CANDIDATES = [
+    Path.home() / ".local/share/caelestia-ptbr/pt_BR.tsv",
+    Path(__file__).resolve().parent / "pt_BR.tsv",
+]
+
+# Fora do escopo: painel de configurações (524 das 819 ocorrências, quase tudo jargão).
+SKIP_DIRS = {"nexus"}
+
+# Trechos que não são simples troca de string dentro de qsTr(). Aplicados ANTES do mapa,
+# sobre a árvore recém-sincronizada, portanto sempre casam com o inglês original.
+# Formato: (arquivo, trecho original, substituto)
+RULES = [
+    # Datas no locale do sistema. Qt.formatDateTime() com string de formato usa o locale C
+    # para nomes de dia/mês ("Sat"); toLocaleString(Qt.locale(), ...) respeita o pt_BR
+    # — é o mesmo padrão que WeatherTab.qml e Calendar.qml já usam.
+    ("services/Time.qml",
+     "return Qt.formatDateTime(clock.date, fmt);",
+     "return clock.date.toLocaleString(Qt.locale(), fmt);"),
+
+    # Uptime ("up 49 minutes"). Em português o plural também é só "+s".
+    ("utils/SysInfo.qml",
+     '${days} day${days === 1 ? "" : "s"}',
+     '${days} dia${days === 1 ? "" : "s"}'),
+    ("utils/SysInfo.qml",
+     '${hours} hour${hours === 1 ? "" : "s"}',
+     '${hours} hora${hours === 1 ? "" : "s"}'),
+    ("utils/SysInfo.qml",
+     '${minutes} minute${minutes === 1 ? "" : "s"}',
+     '${minutes} minuto${minutes === 1 ? "" : "s"}'),
+
+    # Tempo restante de bateria ("2 hours, 19 mins") e os literais injetados em qsTr("Time %1: %2").
+    ("modules/bar/popouts/Battery.qml", "`${day} days`", "`${day} dias`"),
+    ("modules/bar/popouts/Battery.qml", "`${hr} hours`", "`${hr} horas`"),
+    ("modules/bar/popouts/Battery.qml", "`${min} mins`", "`${min} min`"),
+    ("modules/bar/popouts/Battery.qml",
+     '.arg(UPower.onBattery ? "remaining" : "until charged")',
+     '.arg(UPower.onBattery ? "restante" : "até carregar")'),
+    ("modules/bar/popouts/Battery.qml", '"Calculating..."', '"Calculando..."'),
+    ("modules/bar/popouts/Battery.qml", '"Fully charged!"', '"Totalmente carregada!"'),
+
+    # PowerProfile.toString() e PerformanceDegradationReason.toString() vêm do C++ do
+    # quickshell e sempre devolvem inglês. Trocados por um mapa local dos enums.
+    ("modules/bar/popouts/Battery.qml",
+     '.arg(PowerProfile.toString(PowerProfiles.profile))',
+     '.arg(PowerProfiles.profile === PowerProfile.PowerSaver ? qsTr("Economia de energia") : PowerProfiles.profile === PowerProfile.Performance ? qsTr("Desempenho") : qsTr("Equilibrado"))'),
+    ("modules/bar/popouts/Battery.qml",
+     '.arg(PerformanceDegradationReason.toString(PowerProfiles.degradationReason))',
+     '.arg(PowerProfiles.degradationReason === PerformanceDegradationReason.LapDetected ? qsTr("Notebook sobre o colo") : PowerProfiles.degradationReason === PerformanceDegradationReason.HighTemperature ? qsTr("Temperatura alta") : qsTr("Nenhum"))'),
+
+    # Plurais por sufixo: o truque inglês de concatenar "s" não funciona em português,
+    # porque substantivo e adjetivo flexionam juntos. Vira um ternário com frases completas.
+    ("modules/bar/popouts/Bluetooth.qml",
+     'let available = qsTr("%1 device%2 available").arg(devices.length).arg(devices.length === 1 ? "" : "s");',
+     'let available = devices.length === 1 ? qsTr("1 dispositivo disponível") : qsTr("%1 dispositivos disponíveis").arg(devices.length);'),
+    ("modules/lock/NotifDock.qml",
+     'Notifs.list.length > 0 ? qsTr("%1 notification%2").arg(Notifs.list.length).arg(Notifs.list.length === 1 ? "" : "s") : qsTr("Notifications")',
+     'Notifs.list.length > 0 ? (Notifs.list.length === 1 ? qsTr("1 notificação") : qsTr("%1 notificações").arg(Notifs.list.length)) : qsTr("Notificações")'),
+    ("modules/sidebar/NotifDock.qml",
+     'root.notifCount > 0 ? qsTr("notification%1").arg(root.notifCount === 1 ? "" : "s") : qsTr("Notifications")',
+     'root.notifCount > 0 ? (root.notifCount === 1 ? qsTr("notificação") : qsTr("notificações")) : qsTr("Notificações")'),
+
+    # Strings soltas, nunca marcadas com qsTr().
+    ("components/filedialog/FileDialog.qml",
+     'property string filterLabel: "All files"',
+     'property string filterLabel: "Todos os arquivos"'),
+    ("modules/dashboard/Wrapper.qml",
+     '"Profile picture changed", `Profile picture changed to ${Paths.shortenHome(path)}`',
+     '"Foto de perfil alterada", `Foto de perfil alterada para ${Paths.shortenHome(path)}`'),
+    ("modules/dashboard/Wrapper.qml",
+     '"Unable to change profile picture", `Failed to change profile picture to ${Paths.shortenHome(path)}`',
+     '"Não foi possível alterar a foto de perfil", `Falha ao alterar a foto de perfil para ${Paths.shortenHome(path)}`'),
+    ("modules/areapicker/Picker.qml",
+     '"Screenshot taken", "Screenshot copied to clipboard"',
+     '"Captura de tela feita", "Captura copiada para a área de transferência"'),
+    ("modules/dashboard/dash/User.qml",
+     'text: "up " + SysInfo.uptime',
+     'text: "no ar há " + SysInfo.uptime'),
+
+    # Aba Clima: estes rótulos nunca foram marcados com qsTr().
+    ("modules/dashboard/WeatherTab.qml", 'label: "Sunrise"', 'label: "Nascer do sol"'),
+    ("modules/dashboard/WeatherTab.qml", 'label: "Sunset"', 'label: "Pôr do sol"'),
+    ("modules/dashboard/WeatherTab.qml", 'label: "Humidity"', 'label: "Umidade"'),
+    ("modules/dashboard/WeatherTab.qml", 'label: "Feels Like"', 'label: "Sensação"'),
+    ("modules/dashboard/WeatherTab.qml", 'label: "Wind"', 'label: "Vento"'),
+
+    # Ordem da data: "dddd, MMMM d" rende "sábado, agosto 15" — palavras em português
+    # na ordem do inglês. Aspas simples escapam texto literal no formato do Qt.
+    ("modules/dashboard/WeatherTab.qml",
+     'toLocaleDateString(Qt.locale(), "dddd, MMMM d")',
+     '''toLocaleDateString(Qt.locale(), "dddd, d 'de' MMMM")'''),
+    ("modules/dashboard/WeatherTab.qml",
+     'toLocaleDateString(Qt.locale(), "MMM d")',
+     'toLocaleDateString(Qt.locale(), "d MMM")'),
+
+    # "Enabled"/"Disabled" injetados por .arg() no popout de Caps/Num lock.
+    ("modules/bar/popouts/LockStatus.qml",
+     '.arg(Hypr.capsLock ? "Enabled" : "Disabled")',
+     '.arg(Hypr.capsLock ? qsTr("Ativado") : qsTr("Desativado"))'),
+    ("modules/bar/popouts/LockStatus.qml",
+     '.arg(Hypr.numLock ? "Enabled" : "Disabled")',
+     '.arg(Hypr.numLock ? qsTr("Ativado") : qsTr("Desativado"))'),
+
+    # Condições do tempo: mapa local de códigos WMO, não vem traduzido da API.
+    # Substituído em bloco para não colidir com "Rain"/"Snow"/"Fog" usados em outros lugares.
+    ("services/Weather.qml",
+     '''            "0": "Clear",
+            "1": "Clear",
+            "2": "Partly cloudy",
+            "3": "Overcast",
+            "45": "Fog",
+            "48": "Fog",
+            "51": "Drizzle",
+            "53": "Drizzle",
+            "55": "Drizzle",
+            "56": "Freezing drizzle",
+            "57": "Freezing drizzle",
+            "61": "Light rain",
+            "63": "Rain",
+            "65": "Heavy rain",
+            "66": "Light rain",
+            "67": "Heavy rain",
+            "71": "Light snow",
+            "73": "Snow",
+            "75": "Heavy snow",
+            "77": "Snow",
+            "80": "Light rain",
+            "81": "Rain",
+            "82": "Heavy rain",
+            "85": "Light snow showers",
+            "86": "Heavy snow showers",
+            "95": "Thunderstorm",
+            "96": "Thunderstorm with hail",
+            "99": "Thunderstorm with hail"
+        };
+        return conditions[code] || "Unknown";''',
+     '''            "0": "Céu limpo",
+            "1": "Céu limpo",
+            "2": "Parcialmente nublado",
+            "3": "Nublado",
+            "45": "Neblina",
+            "48": "Neblina",
+            "51": "Garoa",
+            "53": "Garoa",
+            "55": "Garoa",
+            "56": "Garoa congelante",
+            "57": "Garoa congelante",
+            "61": "Chuva fraca",
+            "63": "Chuva",
+            "65": "Chuva forte",
+            "66": "Chuva fraca",
+            "67": "Chuva forte",
+            "71": "Neve fraca",
+            "73": "Neve",
+            "75": "Neve forte",
+            "77": "Neve",
+            "80": "Chuva fraca",
+            "81": "Chuva",
+            "82": "Chuva forte",
+            "85": "Pancadas de neve fracas",
+            "86": "Pancadas de neve fortes",
+            "95": "Tempestade",
+            "96": "Tempestade com granizo",
+            "99": "Tempestade com granizo"
+        };
+        return conditions[code] || "Desconhecido";'''),
+]
+
+
+def find_map(explicit=None):
+    if explicit:
+        path = Path(explicit).expanduser()
+        if not path.is_file():
+            sys.exit(f"erro: mapa não encontrado em {path}")
+        return path
+    for candidate in MAP_CANDIDATES:
+        if candidate.is_file():
+            return candidate
+    sys.exit(
+        "erro: nenhum mapa de tradução encontrado. Procurei em:\n  "
+        + "\n  ".join(str(c) for c in MAP_CANDIDATES)
+        + "\nUse --map CAMINHO para apontar um."
+    )
+
+
+def load_map(path):
+    entries = []
+    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        if "\t" not in raw:
+            print(f"aviso: {path.name}:{lineno} sem TAB, ignorada", file=sys.stderr)
+            continue
+        en, pt = raw.split("\t", 1)
+        if en and pt and en != pt:
+            entries.append((en, pt))
+    # Do mais longo para o mais curto: evita que uma string curta seja consumida
+    # antes de uma longa que a contenha.
+    entries.sort(key=lambda e: len(e[0]), reverse=True)
+    return entries
+
+
+def sync():
+    """Monta a árvore nova ao lado e só então troca, para não deixar o shell em execução
+    sem arquivos. Apagar DST direto quebraria componentes carregados sob demanda."""
+    if not SRC.is_dir():
+        sys.exit(f"erro: {SRC} não existe — o caelestia-shell está instalado?")
+
+    DST.parent.mkdir(parents=True, exist_ok=True)
+    staging = DST.with_name(DST.name + ".new")
+    previous = DST.with_name(DST.name + ".old")
+
+    for leftover in (staging, previous):
+        if leftover.exists():
+            shutil.rmtree(leftover)
+
+    shutil.copytree(SRC, staging)
+    for p in staging.rglob("*"):
+        p.chmod(p.stat().st_mode | 0o200)
+    return staging, previous
+
+
+def swap(staging, previous):
+    if DST.exists():
+        DST.rename(previous)
+    staging.rename(DST)
+    if previous.exists():
+        shutil.rmtree(previous)
+
+
+def qml_files(root):
+    for path in sorted(root.rglob("*.qml")):
+        if SKIP_DIRS & set(path.relative_to(root).parts):
+            continue
+        yield path
+
+
+def apply_rules(root):
+    applied = missed = 0
+    for rel, old, new in RULES:
+        path = root / rel
+        if not path.is_file():
+            print(f"  ! regra ignorada, arquivo sumiu: {rel}", file=sys.stderr)
+            missed += 1
+            continue
+        text = path.read_text(encoding="utf-8")
+        if old not in text:
+            print(f"  ! regra não casou em {rel}: {old[:60]}...", file=sys.stderr)
+            missed += 1
+            continue
+        path.write_text(text.replace(old, new), encoding="utf-8")
+        applied += 1
+    return applied, missed
+
+
+def apply_map(root, entries):
+    # Só o literal imediatamente dentro de qsTr( é trocado. Nenhuma string de lógica
+    # (nome de ícone, chave de config, comando) pode ser atingida por engano.
+    patterns = [
+        (en, pt, re.compile(r'(qsTr\(\s*")' + re.escape(en) + r'(")'))
+        for en, pt in entries
+    ]
+    hits = {en: 0 for en, _ in entries}
+    changed_files = 0
+
+    for path in qml_files(root):
+        text = original = path.read_text(encoding="utf-8")
+        for en, pt, pattern in patterns:
+            text, n = pattern.subn(lambda m, pt=pt: m.group(1) + pt + m.group(2), text)
+            hits[en] += n
+        if text != original:
+            path.write_text(text, encoding="utf-8")
+            changed_files += 1
+
+    return hits, changed_files
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Traduz o Caelestia shell editando os literais do QML.",
+        epilog="Sem --map, procura o mapa em ~/.local/share/caelestia-ptbr/pt_BR.tsv "
+               "e depois ao lado do próprio script.",
+    )
+    parser.add_argument("--map", metavar="CAMINHO",
+                        help="arquivo de tradução TSV (para outro idioma, por exemplo)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="mostra o que mudaria e descarta, sem tocar no shell")
+    args = parser.parse_args()
+
+    map_path = find_map(args.map)
+    print(f"mapa: {map_path}")
+
+    print(f"sincronizando {SRC} -> {DST}")
+    staging, previous = sync()
+
+    print("aplicando regras especiais")
+    applied, missed = apply_rules(staging)
+    print(f"  {applied} aplicadas, {missed} sem casar")
+
+    entries = load_map(map_path)
+    print(f"aplicando mapa ({len(entries)} strings)")
+    hits, changed_files = apply_map(staging, entries)
+
+    total = sum(hits.values())
+    unused = [en for en, n in hits.items() if n == 0]
+    print(f"  {total} substituições em {changed_files} arquivos")
+
+    if unused:
+        print(f"  {len(unused)} strings do mapa não encontradas no código:", file=sys.stderr)
+        for en in unused:
+            print(f"    - {en}", file=sys.stderr)
+        print("  (o upstream provavelmente mudou o texto original)", file=sys.stderr)
+
+    if args.dry_run:
+        shutil.rmtree(staging)
+        print(f"\n--dry-run: nada foi alterado. {DST} continua como estava.")
+        return 0
+
+    swap(staging, previous)
+    print("\npronto. reinicie o shell:  caelestia shell -k && caelestia shell -d")
+    return 1 if missed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

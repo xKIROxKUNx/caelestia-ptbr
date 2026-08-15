@@ -1,0 +1,271 @@
+# Tradução pt-BR do Caelestia shell — interface do dia a dia (modules/nexus fica de fora).
+# Formato: <inglês><TAB><português>. Linhas com # e linhas vazias são ignoradas.
+# O texto deve ser escrito exatamente como aparece no QML, inclusive escapes (\" e \n).
+# Strings ausentes daqui ficam em inglês de propósito (nomes próprios, siglas, termos consagrados).
+#
+# --- placeholders e contadores ---
+ (%1 connected)	 (%1 conectado)
+%1 devices available	%1 dispositivos disponíveis
+%1 networks available	%1 redes disponíveis
+%1 on monitor %2 at %3, %4	%1 no monitor %2 em %3, %4
+#
+# --- clima ---
+7-Day Forecast	Previsão de 7 dias
+Hourly forecast	Previsão por hora
+Feels like %1	Sensação de %1
+High %1 • Low %2	Máx %1 • Mín %2
+Today	Hoje
+Now	Agora
+now	agora
+No weather	Sem dados de clima
+Unknown City	Cidade desconhecida
+Weather	Clima
+#
+# --- bateria e energia ---
+Battery	Bateria
+Battery is charging	A bateria está carregando
+Battery is discharging	A bateria está descarregando
+Battery level is low	Nível da bateria está baixo
+Battery warning	Aviso de bateria
+Charger plugged in	Carregador conectado
+Charger unplugged	Carregador desconectado
+Charging	Carregando
+Full	Cheia
+No battery detected	Nenhuma bateria detectada
+Time %1: %2	Tempo %1: %2
+Remaining: %1%	Restante: %1%
+Power profile: %1	Perfil de energia: %1
+Performance Degraded	Desempenho reduzido
+Normal power management	Gerenciamento de energia normal
+Preventing sleep mode	Impedindo a suspensão
+Keep Awake	Manter acordado
+Hibernating in 5 seconds	Hibernando em 5 segundos
+Hibernating to prevent data loss	Hibernando para evitar perda de dados
+Calculating...	Calculando...
+#
+# --- rede / wifi / vpn ---
+Wireless	Wi-Fi
+# "Ethernet" fica como está — mesma palavra nos dois idiomas.
+Enabled	Ativado
+Network	Rede
+Network: %1	Rede: %1
+Network: Unknown	Rede: desconhecida
+Rescan networks	Reescanear redes
+Connect	Conectar
+Connecting...	Conectando...
+Connected to %1	Conectado a %1
+Disconnected from %1	Desconectado de %1
+Could not connect to %1	Não foi possível conectar a %1
+Connection failed. Please check your password and try again.	Falha na conexão. Verifique a senha e tente novamente.
+Open	Aberta
+Address: %1	Endereço: %1
+VPN authentication required	Autenticação de VPN necessária
+VPN connected	VPN conectada
+VPN connection failed	Falha ao conectar a VPN
+VPN disconnected	VPN desconectada
+VPN disconnection failed	Falha ao desconectar a VPN
+VPN error	Erro de VPN
+#
+# --- bluetooth ---
+Discovering	Procurando
+Open settings	Abrir configurações
+Input device	Dispositivo de entrada
+Output device	Dispositivo de saída
+Unknown Device	Dispositivo desconhecido
+#
+# --- desempenho / sistema ---
+Dashboard	Painel
+Performance	Desempenho
+Memory	Memória
+Storage	Armazenamento
+Usage	Uso
+Used	Usado
+No disks	Sem discos
+No disks detected	Nenhum disco detectado
+Collecting data...	Coletando dados...
+#
+# --- mídia ---
+Media	Mídia
+No media	Sem mídia
+Nothing playing	Nada tocando
+Now Playing	Tocando agora
+Play something for it to show up here!	Reproduza algo para aparecer aqui!
+Try playing some music!	Experimente tocar uma música!
+No players	Nenhum reprodutor
+Paused	Pausado
+Muted	Mudo
+# "Volume (%1)" fica como está.
+Lyrics	Letra
+Loading lyrics...	Carregando letra...
+No lyrics found	Letra não encontrada
+Offset: %1 ms	Deslocamento: %1 ms
+Unknown album	Álbum desconhecido
+Unknown artist	Artista desconhecido
+Unknown title	Título desconhecido
+Unknown track	Faixa desconhecida
+#
+# --- notificações ---
+# "Notifications" sozinho não entra aqui: as duas ocorrências ficam dentro dos ternários
+# de plural (lock/NotifDock.qml e sidebar/NotifDock.qml) e já são traduzidas pelas regras.
+No Notifications	Sem notificações
+Unlock for Notifications	Desbloqueie para ver as notificações
+No body here! :/	Sem conteúdo aqui! :/
+Do not disturb disabled	Não perturbe desativado
+Do not disturb enabled	Não perturbe ativado
+Popup notifications are now disabled	Notificações em popup desativadas
+Popup notifications are now enabled	Notificações em popup ativadas
+Unknown Application	Aplicativo desconhecido
+#
+# --- gravação de tela ---
+Screen Recorder	Gravador de tela
+Recordings	Gravações
+No recordings found	Nenhuma gravação encontrada
+Record fullscreen	Gravar tela cheia
+Record fullscreen with sound	Gravar tela cheia com som
+Record region	Gravar região
+Record region with sound	Gravar região com som
+Region	Região
+Recording at %1	Gravando em %1
+Recording for %1	Gravando há %1
+Delete recording?	Excluir gravação?
+Recording '%1' will be permanently deleted.	A gravação '%1' será excluída permanentemente.
+Ready	Pronto
+Running...	Executando...
+#
+# --- launcher ---
+Type \"%1\" for commands	Digite \"%1\" para comandos
+Type an expression to calculate	Digite uma expressão para calcular
+Open in calculator	Abrir na calculadora
+No results	Sem resultados
+Try searching for something else	Tente buscar outra coisa
+Try switching to a window	Tente alternar para uma janela
+Move to workspace	Mover para workspace
+Selected candidate: %1 | %2 | %3	Candidato selecionado: %1 | %2 | %3
+Kill	Encerrar
+Game mode enabled	Modo jogo ativado
+Game mode disabled	Modo jogo desativado
+Disabled Hyprland animations, blur, gaps and shadows	Animações, desfoque, espaçamentos e sombras do Hyprland desativados
+Hyprland settings restored	Configurações do Hyprland restauradas
+All up to date!	Tudo atualizado!
+#
+# --- esquemas de cor (Material You) ---
+Vibrant	Vibrante
+Expressive	Expressivo
+Fidelity	Fidelidade
+Content	Conteúdo
+Fruit Salad	Salada de Frutas
+Rainbow	Arco-íris
+Neutral	Neutro
+Monochrome	Monocromático
+A high chroma palette. The primary palette's chroma is at maximum.	Uma paleta de croma alto. O croma da paleta primária está no máximo.
+Default for Material theme colours. A pastel palette with a low chroma.	Padrão das cores do tema Material. Uma paleta pastel de croma baixo.
+A medium chroma palette. The primary palette's hue is different from the seed colour, for variety.	Uma paleta de croma médio. O matiz da paleta primária difere da cor base, para dar variedade.
+Matches the seed colour, even if the seed colour is very bright (high chroma).	Segue a cor base, mesmo que ela seja muito viva (croma alto).
+Almost identical to fidelity.	Quase idêntico ao Fidelidade.
+A playful theme - the seed colour's hue does not appear in the theme.	Um tema brincalhão — o matiz da cor base não aparece no tema.
+Close to grayscale, a hint of chroma.	Perto da escala de cinza, com um toque de croma.
+All colours are grayscale, no chroma.	Todas as cores em escala de cinza, sem croma.
+Now using: %1	Usando agora: %1
+#
+# --- papel de parede e arquivos ---
+No wallpapers found	Nenhum papel de parede encontrado
+Try putting some wallpapers in %1	Coloque alguns papéis de parede em %1
+Wallpaper missing?	Papel de parede sumiu?
+Set it now!	Defina agora!
+Select a wallpaper	Selecione um papel de parede
+Select a profile picture	Selecione uma foto de perfil
+Select a file	Selecione um arquivo
+Select	Selecionar
+Cancel	Cancelar
+Delete	Excluir
+Back	Voltar
+Files	Arquivos
+Desktop	Área de trabalho
+Filter:	Filtro:
+Image files	Arquivos de imagem
+This folder is empty	Esta pasta está vazia
+Loading...	Carregando...
+#
+# --- tela de bloqueio / autenticação ---
+Password	Senha
+Enter password	Digite a senha
+Enter your password	Digite sua senha
+Incorrect password. Please try again.	Senha incorreta. Tente novamente.
+Incorrect password. Please try again or use face.	Senha incorreta. Tente novamente ou use o rosto.
+Incorrect password. Please try again or use fingerprint.	Senha incorreta. Tente novamente ou use a digital.
+Scanning face...	Lendo o rosto...
+Face not recognized (%1/%2). Please try again.	Rosto não reconhecido (%1/%2). Tente novamente.
+Face not recognized (%1/%2). Please try again or use password.	Rosto não reconhecido (%1/%2). Tente novamente ou use a senha.
+Fingerprint not recognized (%1/%2). Please try again.	Digital não reconhecida (%1/%2). Tente novamente.
+Fingerprint not recognized (%1/%2). Please try again or use password.	Digital não reconhecida (%1/%2). Tente novamente ou use a senha.
+Maximum attempts for all authentication methods reached.	Número máximo de tentativas atingido em todos os métodos de autenticação.
+Maximum face attempts reached. Please use password.	Máximo de tentativas por rosto atingido. Use a senha.
+Maximum fingerprint attempts reached. Please use password.	Máximo de tentativas por digital atingido. Use a senha.
+Maximum password attempts reached.	Máximo de tentativas de senha atingido.
+Maximum password attempts reached. Please use face.	Máximo de tentativas de senha atingido. Use o rosto.
+Maximum password attempts reached. Please use fingerprint.	Máximo de tentativas de senha atingido. Use a digital.
+Max tries reached	Máximo de tentativas atingido
+FACE ERROR: %1	ERRO DE ROSTO: %1
+FP ERROR: %1	ERRO DE DIGITAL: %1
+PW ERROR: %1	ERRO DE SENHA: %1
+Reason: %1	Motivo: %1
+#
+# --- teclado (caps/num lock, layouts) ---
+Caps lock enabled	Caps lock ativado
+Caps lock disabled	Caps lock desativado
+Caps lock is currently enabled	O Caps lock está ativado
+Caps lock is currently disabled	O Caps lock está desativado
+Caps lock is ON.	Caps lock está LIGADO.
+Caps lock is ON. Kb layout: %1	Caps lock está LIGADO. Layout: %1
+Caps lock and Num lock are ON.	Caps lock e Num lock estão LIGADOS.
+Caps lock and Num lock are ON.\nKeyboard layout: %1	Caps lock e Num lock estão LIGADOS.\nLayout do teclado: %1
+Num lock enabled	Num lock ativado
+Num lock disabled	Num lock desativado
+Num lock is currently enabled	O Num lock está ativado
+Num lock is currently disabled	O Num lock está desativado
+Num lock is ON.	Num lock está LIGADO.
+Num lock is ON. Kb layout: %1	Num lock está LIGADO. Layout: %1
+Keyboard Layouts	Layouts de teclado
+Keyboard layout: %1	Layout do teclado: %1
+Keyboard layout changed	Layout do teclado alterado
+Keyboard layout limit	Limite de layouts de teclado
+Layout changed to: %1	Layout alterado para: %1
+XKB supports only 4 layouts at a time	O XKB suporta no máximo 4 layouts por vez
+#
+# --- janelas / barra ---
+No active client	Nenhuma janela ativa
+No description	Sem descrição
+Unnamed	Sem nome
+Unknown	Desconhecido
+Pin	Fixar
+Unpin	Desafixar
+Pinned: %1	Fixado: %1
+Float	Flutuar
+Tile	Encaixar
+Floating: %1	Flutuante: %1
+Fullscreen	Tela cheia
+Fullscreen state: %1	Estado de tela cheia: %1
+Fullscreen state: unknown	Estado de tela cheia: desconhecido
+Initial class: %1	Classe inicial: %1
+Initial title: %1	Título inicial: %1
+Monitor: %1 (%2) at %3, %4	Monitor: %1 (%2) em %3, %4
+Monitor: unknown	Monitor: desconhecido
+Position: %1, %2	Posição: %1, %2
+Size: %1 x %2	Tamanho: %1 x %2
+Process id: %1	ID do processo: %1
+Active since %1	Ativo desde %1
+#
+# --- sidebar / widgets / config ---
+Quick Toggles	Ações rápidas
+No widgets enabled	Nenhum widget ativado
+Enable widgets in the dashboard settings	Ative os widgets nas configurações do painel
+Config loaded	Configuração carregada
+Config loaded successfully!	Configuração carregada com sucesso!
+Failed to parse config%1	Falha ao interpretar a configuração%1
+Failed to parse token config%1	Falha ao interpretar a configuração de tokens%1
+Failed to save config%1	Falha ao salvar a configuração%1
+Unknown option in%1 config	Opção desconhecida na configuração%1
+Unknown option in%1 token config	Opção desconhecida na configuração de tokens%1
+Could not start %1. Is it installed?	Não foi possível iniciar %1. Ele está instalado?
+Audio input changed	Entrada de áudio alterada
+Audio output changed	Saída de áudio alterada
