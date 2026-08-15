@@ -1,5 +1,7 @@
 # caelestia-ptbr
 
+🌐 **Português (Brasil)** · [English](README.en.md)
+
 Tradução para **português do Brasil** do [Caelestia shell](https://github.com/caelestia-dots/shell).
 
 O Caelestia marca seus textos com `qsTr()`, mas o quickshell não carrega catálogos de tradução —

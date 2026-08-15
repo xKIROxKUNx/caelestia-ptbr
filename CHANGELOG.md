@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## v1.2.0
+
+- README em inglês (`README.en.md`), com seletor de idioma no topo dos dois arquivos. O público
+  em inglês interessa porque o script serve para qualquer idioma — a seção "Translating to
+  another language" é o caminho para quem quiser adaptar.
+
 ## v1.1.2
 
 - A mensagem final do `instalar.sh` apontava o mapa base para personalização, o que seria
