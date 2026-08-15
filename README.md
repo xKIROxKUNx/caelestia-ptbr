@@ -130,7 +130,8 @@ Sempre que houver correções ou strings novas, dentro do seu clone:
 Ele busca a versão nova, mostra o que mudou, reinstala e reinicia o shell. **Não precisa clonar
 de novo** — o script atualiza o próprio clone em que está.
 
-Se não houver novidade, ele diz e sai sem mexer em nada.
+Se não houver novidade, ele diz e sai sem mexer em nada. O que mudou em cada versão está no
+[CHANGELOG](CHANGELOG.md).
 
 ## Ajustar uma palavra
 
