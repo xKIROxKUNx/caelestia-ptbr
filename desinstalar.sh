@@ -53,3 +53,10 @@ if qs list --all 2>/dev/null | grep -q '/etc/xdg/quickshell/caelestia'; then
 else
     amarelo "! o shell não subiu sozinho. Inicie com: caelestia shell -d"
 fi
+
+OVERLAY="${XDG_CONFIG_HOME:-$HOME/.config}/caelestia-ptbr/local.tsv"
+if [ -f "$OVERLAY" ]; then
+    echo
+    amarelo "Seus ajustes pessoais foram mantidos em $OVERLAY"
+    amarelo "(apague na mão se não for reinstalar)"
+fi

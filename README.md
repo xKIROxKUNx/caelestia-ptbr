@@ -58,13 +58,15 @@ era uma barra escrita `"Sat 15"` ao lado de um calendário escrito `"Agosto 2026
 
 ## O que é traduzido
 
-**231 strings** no mapa e **30 regras** de código, dando **268 substituições em 61 arquivos**:
+**231 strings** no mapa e **32 regras** de código, dando **268 substituições em 61 arquivos**:
 
 - barra, popouts de Wi-Fi, Bluetooth, bateria e Caps/Num lock
 - dashboard inteiro: Painel, Mídia, Desempenho e Clima
 - launcher, tela de bloqueio, notificações, sidebar, OSD, menu de sessão e utilitários
 - datas e horas no locale certo (`"sáb. 15"`, `"sábado, 15 de agosto"`, `"15 ago."`)
 - uptime, durações de bateria e condições do tempo (mapa de códigos WMO)
+- avisos de bateria fraca — que nem estão no QML: são valores padrão compilados dentro do
+  `libcaelestia-config.so`, traduzidos na hora de exibir
 - enums que vêm em inglês do C++ do quickshell (`PowerProfile`, `PerformanceDegradationReason`)
 - plurais reescritos: o inglês concatena `"s"`, o português flexiona substantivo *e* adjetivo,
   então esses viram frases completas em vez de sufixo
@@ -117,22 +119,39 @@ modificado, `pacman -Qkk caelestia-shell` continua limpo o tempo todo.
 
 ---
 
+## Atualizar
+
+Sempre que houver correções ou strings novas, dentro do seu clone:
+
+```bash
+./atualizar.sh
+```
+
+Ele busca a versão nova, mostra o que mudou, reinstala e reinicia o shell. **Não precisa clonar
+de novo** — o script atualiza o próprio clone em que está.
+
+Se não houver novidade, ele diz e sai sem mexer em nada.
+
 ## Ajustar uma palavra
 
-Todo o texto vive em [`pt_BR.tsv`](pt_BR.tsv), um arquivo `inglês<TAB>português` por linha:
+Não gostou de alguma tradução? Crie `~/.config/caelestia-ptbr/local.tsv` com só o que quer mudar:
 
 ```
-Rescan networks	Reescanear redes
-Nothing playing	Nada tocando
+Rescan networks	Buscar redes de novo
+Nothing playing	Nenhuma mídia
 ```
 
-Edite `~/.local/share/caelestia-ptbr/pt_BR.tsv` e rode:
+Mesmo formato do mapa base — `inglês<TAB>português`, um por linha — e o que estiver aqui **vence**.
+
+Esse arquivo é seu: nem o instalador nem o `atualizar.sh` encostam nele, então seus ajustes
+sobrevivem a todas as atualizações do projeto. Depois de editar:
 
 ```bash
 caelestia-ptbr && caelestia shell -k && caelestia shell -d
 ```
 
-Linhas ausentes do mapa simplesmente ficam em inglês — nunca quebram nada.
+O mapa completo, para consulta, é o [`pt_BR.tsv`](pt_BR.tsv). Strings ausentes dos dois arquivos
+simplesmente ficam em inglês — nunca quebram nada.
 
 ---
 
@@ -160,9 +179,15 @@ Um replace solto trocaria esses e quebraria a interface.
 como traduzíveis, formatos de data, plurais e enums vindos do C++. Cada regra é um par
 `(arquivo, trecho original, substituto)` e falha ruidosamente se o upstream mudar o código.
 
-**Sobrevive a atualizações.** A unidade `caelestia-ptbr.path` vigia
-`/etc/xdg/quickshell/caelestia/shell.qml`. Quando o pacman reescreve o pacote, a tradução é
-reaplicada sozinha. Strings novas do upstream aparecem em inglês até o mapa ser atualizado —
+**Duas atualizações diferentes, dois mecanismos.** Vale entender a distinção:
+
+| O que muda | Como a tradução acompanha |
+|---|---|
+| O **Caelestia** é atualizado pelo `pacman -Syu` | Automático. A unidade `caelestia-ptbr.path` vigia `/etc/xdg/quickshell/caelestia/shell.qml` e reaplica a tradução sozinha |
+| A **tradução** ganha correções ou strings novas | Você roda `./atualizar.sh` quando quiser |
+
+O primeiro caso é o que quebraria a interface se ficasse sem tratamento, então é o automático.
+O segundo é uma melhoria: até você atualizar, strings novas do upstream aparecem em inglês —
 degrada bem, nunca quebra.
 
 ---

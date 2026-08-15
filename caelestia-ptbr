@@ -24,6 +24,10 @@ MAP_CANDIDATES = [
     Path(__file__).resolve().parent / "pt_BR.tsv",
 ]
 
+# Ajustes do usuário, sobrepostos ao mapa base. Nunca é tocado pelo instalador,
+# então sobrevive a qualquer atualização do projeto.
+OVERLAY = Path.home() / ".config/caelestia-ptbr/local.tsv"
+
 # Fora do escopo: painel de configurações (524 das 819 ocorrências, quase tudo jargão).
 SKIP_DIRS = {"nexus"}
 
@@ -112,6 +116,30 @@ RULES = [
     ("modules/dashboard/WeatherTab.qml",
      'toLocaleDateString(Qt.locale(), "MMM d")',
      'toLocaleDateString(Qt.locale(), "d MMM")'),
+
+    # Avisos de bateria. Os textos padrão não estão no QML — vêm compilados no
+    # libcaelestia-config.so como valores default de general.battery.warnLevels.
+    # Traduzimos na exibição; texto personalizado pelo usuário passa intacto.
+    ("modules/BatteryMonitor.qml",
+     '    property real lastPercentage: 100\n',
+     '''    property real lastPercentage: 100
+
+    // Sem tipo no parâmetro de propósito: precisa devolver undefined quando o campo
+    // não existe, para o "??" seguinte cair no texto padrão.
+    function ptbr(texto) {
+        return ({
+            "Low battery": "Bateria baixa",
+            "You might want to plug in a charger": "Talvez seja hora de ligar o carregador",
+            "Did you see the previous message?": "Você viu a mensagem anterior?",
+            "You should probably plug in a charger <b>now</b>": "É melhor ligar o carregador <b>agora</b>",
+            "Critical battery level": "Nível crítico de bateria",
+            "PLUG THE CHARGER RIGHT NOW!!": "LIGUE O CARREGADOR AGORA!!"
+        })[texto] ?? texto;
+    }
+'''),
+    ("modules/BatteryMonitor.qml",
+     'Toaster.toast(level.title ?? qsTr("Battery warning"), level.message ?? qsTr("Battery level is low")',
+     'Toaster.toast(root.ptbr(level.title) ?? qsTr("Battery warning"), root.ptbr(level.message) ?? qsTr("Battery level is low")'),
 
     # "Enabled"/"Disabled" injetados por .arg() no popout de Caps/Num lock.
     ("modules/bar/popouts/LockStatus.qml",
@@ -203,8 +231,8 @@ def find_map(explicit=None):
     )
 
 
-def load_map(path):
-    entries = []
+def parse_tsv(path):
+    pares = {}
     for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if not raw.strip() or raw.lstrip().startswith("#"):
             continue
@@ -212,8 +240,25 @@ def load_map(path):
             print(f"aviso: {path.name}:{lineno} sem TAB, ignorada", file=sys.stderr)
             continue
         en, pt = raw.split("\t", 1)
-        if en and pt and en != pt:
-            entries.append((en, pt))
+        if en and pt:
+            pares[en] = pt
+    return pares
+
+
+def load_map(path):
+    pares = parse_tsv(path)
+
+    # Ajustes pessoais moram fora do mapa base, para não serem perdidos quando uma
+    # atualização do projeto reescrever pt_BR.tsv. O que estiver aqui vence.
+    aplicados = 0
+    if OVERLAY.is_file():
+        for en, pt in parse_tsv(OVERLAY).items():
+            pares[en] = pt
+            aplicados += 1
+        plural = "ajuste pessoal" if aplicados == 1 else "ajustes pessoais"
+        print(f"overlay: {OVERLAY} ({aplicados} {plural})")
+
+    entries = [(en, pt) for en, pt in pares.items() if en != pt]
     # Do mais longo para o mais curto: evita que uma string curta seja consumida
     # antes de uma longa que a contenha.
     entries.sort(key=lambda e: len(e[0]), reverse=True)
