@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## v1.2.1
+
+- Traduz "Hibernate failed" / "Enable hibernation to use this feature.", que vinham do
+  `libcaelestia-services.so`. A interceptação foi feita no handler IPC `toaster`
+  (`modules/Shortcuts.qml`), por onde passa **todo** toast emitido de fora do QML — então
+  qualquer mensagem futura vinda do C++ ou de `caelestia shell toaster …` já cai no mapa.
+
 ## v1.2.0
 
 - README em inglês (`README.en.md`), com seletor de idioma no topo dos dois arquivos. O público

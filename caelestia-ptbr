@@ -141,6 +141,55 @@ RULES = [
      'Toaster.toast(level.title ?? qsTr("Battery warning"), level.message ?? qsTr("Battery level is low")',
      'Toaster.toast(root.ptbr(level.title) ?? qsTr("Battery warning"), root.ptbr(level.message) ?? qsTr("Battery level is low")'),
 
+    # Toasts vindos do C++ (libcaelestia-services.so) chegam pelo IPC "toaster", implementado
+    # em QML. Traduzir aqui pega qualquer mensagem que venha por esse caminho — hoje o
+    # "Hibernate failed", e de quebra o que for enviado por `caelestia shell toaster ...`.
+    # A função fica FORA do IpcHandler: tudo que está dentro dele vira método IPC exposto.
+    ("modules/Shortcuts.qml",
+     '''    property bool launcherInterrupted
+''',
+     '''    property bool launcherInterrupted
+
+    // Sem tipo no parâmetro: title/message podem vir indefinidos pelo IPC.
+    function ptbr(texto) {
+        return ({
+            "Hibernate failed": "Falha ao hibernar",
+            "Enable hibernation to use this feature.": "Ative a hibernação para usar este recurso."
+        })[texto] ?? texto;
+    }
+'''),
+    ("modules/Shortcuts.qml",
+     '''        function info(title: string, message: string, icon: string): void {
+            Toaster.toast(title, message, icon, Toast.Info);
+        }
+
+        function success(title: string, message: string, icon: string): void {
+            Toaster.toast(title, message, icon, Toast.Success);
+        }
+
+        function warn(title: string, message: string, icon: string): void {
+            Toaster.toast(title, message, icon, Toast.Warning);
+        }
+
+        function error(title: string, message: string, icon: string): void {
+            Toaster.toast(title, message, icon, Toast.Error);
+        }''',
+     '''        function info(title: string, message: string, icon: string): void {
+            Toaster.toast(root.ptbr(title), root.ptbr(message), icon, Toast.Info);
+        }
+
+        function success(title: string, message: string, icon: string): void {
+            Toaster.toast(root.ptbr(title), root.ptbr(message), icon, Toast.Success);
+        }
+
+        function warn(title: string, message: string, icon: string): void {
+            Toaster.toast(root.ptbr(title), root.ptbr(message), icon, Toast.Warning);
+        }
+
+        function error(title: string, message: string, icon: string): void {
+            Toaster.toast(root.ptbr(title), root.ptbr(message), icon, Toast.Error);
+        }'''),
+
     # "Enabled"/"Disabled" injetados por .arg() no popout de Caps/Num lock.
     ("modules/bar/popouts/LockStatus.qml",
      '.arg(Hypr.capsLock ? "Enabled" : "Disabled")',

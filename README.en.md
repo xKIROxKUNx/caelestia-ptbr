@@ -67,7 +67,7 @@ to `toLocaleString(Qt.locale(), format)`, the same pattern the rest of the shell
 
 ## What gets translated
 
-**231 strings** in the map plus **32 code rules**, producing **268 replacements across 61 files**:
+**231 strings** in the map plus **34 code rules**, producing **268 replacements across 61 files**:
 
 - bar, Wi-Fi / Bluetooth / battery / Caps-Num lock popouts
 - the whole dashboard: home, media, performance and weather
@@ -76,6 +76,8 @@ to `toLocaleString(Qt.locale(), format)`, the same pattern the rest of the shell
 - uptime, battery durations and weather conditions (WMO code map)
 - low-battery warnings — which aren't in the QML at all: they are default values compiled into
   `libcaelestia-config.so`, so they get translated at display time
+- toasts emitted by Caelestia's own C++ (such as "Hibernate failed"), intercepted in the
+  `toaster` IPC handler — the single choke point every message from outside the QML goes through
 - enums that come back in English from quickshell's C++ (`PowerProfile`,
   `PerformanceDegradationReason`)
 - rewritten plurals: English appends an `"s"`, while Portuguese inflects both the noun *and* the

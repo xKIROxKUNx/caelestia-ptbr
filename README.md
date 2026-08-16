@@ -60,7 +60,7 @@ era uma barra escrita `"Sat 15"` ao lado de um calendário escrito `"Agosto 2026
 
 ## O que é traduzido
 
-**231 strings** no mapa e **32 regras** de código, dando **268 substituições em 61 arquivos**:
+**231 strings** no mapa e **34 regras** de código, dando **268 substituições em 61 arquivos**:
 
 - barra, popouts de Wi-Fi, Bluetooth, bateria e Caps/Num lock
 - dashboard inteiro: Painel, Mídia, Desempenho e Clima
@@ -69,6 +69,8 @@ era uma barra escrita `"Sat 15"` ao lado de um calendário escrito `"Agosto 2026
 - uptime, durações de bateria e condições do tempo (mapa de códigos WMO)
 - avisos de bateria fraca — que nem estão no QML: são valores padrão compilados dentro do
   `libcaelestia-config.so`, traduzidos na hora de exibir
+- toasts emitidos pelo C++ do próprio Caelestia (como "Hibernate failed"), interceptados no
+  handler IPC `toaster` — por onde passa qualquer mensagem vinda de fora do QML
 - enums que vêm em inglês do C++ do quickshell (`PowerProfile`, `PerformanceDegradationReason`)
 - plurais reescritos: o inglês concatena `"s"`, o português flexiona substantivo *e* adjetivo,
   então esses viram frases completas em vez de sufixo
